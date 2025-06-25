@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Profile</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Update Profile</h2>
+    <form id="updateProfileForm">
+
+      <!-- Read-only fields -->
+      <div class="input-group">
+        <label for="firstName">First Name</label>
+        <input type="text" id="firstName" readonly>
+      </div>
+
+      <div class="input-group">
+        <label for="lastName">Last Name</label>
+        <input type="text" id="lastName" readonly>
+      </div>
+
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" readonly>
+      </div>
+
+      <!-- Editable fields -->
+      <div class="input-group">
+        <label for="phoneNumber">Phone Number</label>
+        <input type="text" id="phoneNumber" placeholder="e.g., 0123456789">
+      </div>
+
+      <div class="input-group">
+        <label for="position">Position</label>
+        <input type="text" id="position" placeholder="e.g., Technician">
+      </div>
+
+      <div class="input-group">
+        <label for="department">Department</label>
+        <input type="text" id="department" placeholder="e.g., Marine Ops">
+      </div>
+
+      <button type="submit" class="btn">Update</button>
+    </form>
+  </div>
+
+  <script type="module">
+    import { auth, db } from './js/firebase-config.js';
+    import { doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const firstName = document.getElementById('firstName');
+    const lastName = document.getElementById('lastName');
+    const email = document.getElementById('email');
+    const phoneNumber = document.getElementById('phoneNumber');
+    const position = document.getElementById('position');
+    const department = document.getElementById('department');
+
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          firstName.value = data.firstName || '';
+          lastName.value = data.lastName || '';
+          email.value = data.email || '';
+          phoneNumber.value = data.phoneNumber || '';
+          position.value = data.position || '';
+          department.value = data.department || '';
+        }
+      }
+    });
+
+    document.getElementById('updateProfileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (user) {
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+          phoneNumber: phoneNumber.value,
+          position: position.value,
+          department: department.value
+        });
+        alert('Alright Profile updated successfully!');
+      }
+    });
+  </script>
+</body>
+</html>
